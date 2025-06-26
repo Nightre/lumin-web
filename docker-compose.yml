@@ -59,8 +59,8 @@ services:
     expose:
       - "8080"
     restart: unless-stopped
-    environment:
-      - VITE_SERVER_URL=http://127.0.0.1:3000/api/1v/
+    args:
+      VITE_SERVER_URL: http://127.0.0.1:3000/api/1v/
 
   nginx:
     container_name: nginx
