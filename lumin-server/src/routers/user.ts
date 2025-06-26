@@ -38,7 +38,7 @@ user.post('/register/send-email', zValidator('json', registerSendEmailSchema), a
     // 异步发送邮件
     await sendVerificationEmail(email, verificationCode);
 
-    return c.json({ message: '验证码已发送到您的邮箱，请查收。' });
+    return c.json({ message: '测试阶段不发送邮箱，验证码为' + verificationCode });
 });
 
 // 步骤 2: 验证邮箱并创建用户
@@ -82,7 +82,7 @@ user.post('/login', zValidator('json', loginSchema), async (c) => {
 
     const token = await createToken(foundUser)
 
-    return c.json({ token, message: "登录成功", user:foundUser.serlize() });
+    return c.json({ token, message: "登录成功", user: foundUser.serlize() });
 });
 
 // --- 注销 ---

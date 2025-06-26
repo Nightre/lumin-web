@@ -6,8 +6,12 @@ import { useUserStore } from './stores/user';
 
 const user = useUserStore()
 onMounted(async () => {
-  const response = await axios.get("/user/me", { showToast: false })
-  user.login(response.data.user)
+  try {
+    const response = await axios.get("/user/me", { showToast: false })
+    user.login(response.data.user)    
+  } catch (error) {
+    user.logout()
+  }
 })
 </script>
 

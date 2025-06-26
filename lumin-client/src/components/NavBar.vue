@@ -17,10 +17,11 @@ const logout = () => {
 
 <template>
   <div v-if="user.isLogin">
-    <p>{{ user.user!.username }}</p>
+    <p>{{ user.user?.username }}</p>
     <button @click="logout">退出登录</button>
   </div>
   <div v-else>
     <router-link to="/login">登录/注册</router-link>
   </div>
+  <hr />
 </template>
