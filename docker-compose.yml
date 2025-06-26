@@ -1,0 +1,79 @@
+services:
+  app:
+    container_name: main
+    build:
+      context: ./lumin-server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=mysql://user:xi334wo82@mysql:3306/app
+    command: bun run start
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    
+  redis:
+      image: redis:7
+      container_name: redis
+      ports:
+        - "6379:6379"
+      volumes:
+        - redis-data:/data
+      restart: unless-stopped
+      healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: xi334wo82
+      MYSQL_DATABASE: app
+      MYSQL_USER: user
+      MYSQL_PASSWORD: xi334wo82
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "user", "-pxi334wo82"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./lumin-client
+      dockerfile: Dockerfile
+    expose:
+      - "8080"
+    restart: unless-stopped
+    environment:
+      - VITE_SERVER_URL=http://127.0.0.1:3000/api/1v/
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - app
+    restart: unless-stopped
+    
+volumes:
+  mysql-data:
+  redis-data:
