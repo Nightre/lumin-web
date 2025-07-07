@@ -4,7 +4,7 @@
       <div class="flex justify-between items-center h-16">
         <!-- Logo / Home -->
         <router-link to="/" class="text-xl font-semibold text-gray-800 hover:text-blue-500 transition">
-          蝾螈博物馆
+          蝾螈馆
         </router-link>
 
         <!-- Right Side -->

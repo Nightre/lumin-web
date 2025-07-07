@@ -40,8 +40,11 @@ watch(() => user.isLogin, () => {
       <div class="max-w-md">
         <h1 class="text-5xl font-bold">蝾螈馆</h1>
         <p class="py-6">
-          继蝾螈池又一新作, 目前该网站正在建设. 不过蝾螈的居民可以开始注册使用已开发功能.
-          目前有托管静态网站的功能
+          继「蝾螈池」之后的全新篇章——<strong>蝾螈馆</strong>
+          「蝾螈池」的老朋友们注意啦~<br>
+          我们的新家——<strong>蝾螈馆</strong> 正在紧锣密鼓地装修中 🛠️<br>
+          虽然还没完全布置好，但部分功能已经开放，欢迎大家提前入住！<br>
+          当前可使用：<strong>静态网站托管</strong> 🧳✨
         </p>
       </div>
     </div>
