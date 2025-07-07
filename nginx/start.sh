@@ -1,6 +1,11 @@
 #!/bin/sh
 set -e
 
-envsubst '${DOMAIN}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+if [ -z "$DOMAIN" ]; then
+  echo "Error: DOMAIN environment variable is not set."
+  exit 1
+fi
+
+envsubst '${DOMAIN}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
 
 nginx -g 'daemon off;'
