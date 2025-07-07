@@ -21,6 +21,10 @@ const project = new Hono<{ Variables: { user: UserPayload } }>();
 project.get('/view/:subdomain/*', async (c) => {
   const subdomain = c.req.param('subdomain');
   const filePath = c.req.path.split('/').slice(6).join('/')
+  
+  if (!filePath) {
+    return c.text('404 要路径', 404)
+  }
 
   const fileDb = await File.findOne({
     where: { path: filePath },
