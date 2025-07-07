@@ -57,7 +57,7 @@ services:
       context: ./lumin-client
       dockerfile: Dockerfile
       args:
-        - VITE_SERVER_URL=http://127.0.0.1:3000/api/1v/
+        - VITE_SERVER_URL=http://app:3000/api/1v/
         - VITE_WEBSITE_DOMAIN=guan.axopl.com
     expose:
       - "8080"
