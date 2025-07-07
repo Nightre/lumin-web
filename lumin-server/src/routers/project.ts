@@ -31,11 +31,11 @@ project.get('/view/:subdomain/*', async (c) => {
       },
     }
   })
+  console.log("访问文件", filePath, subdomain)
 
   if (!fileDb) {
     return c.text('404 没文件', 404)
   }
-
   const file = await readFile(fileDb.fileId)
   const mimeType = fileDb.mimeType
   return new Response(file, {
