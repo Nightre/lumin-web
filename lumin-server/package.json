@@ -27,7 +27,7 @@
     "sequelize-cli": "^6.6.3",
     "typeorm": "^0.3.25",
     "uuid": "^11.1.0",
-    "zod": "^3.25.67"
+    "zod": "^3.25.75"
   },
   "devDependencies": {
     "@types/bun": "latest",
