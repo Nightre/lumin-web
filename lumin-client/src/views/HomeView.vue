@@ -41,9 +41,8 @@ watch(() => user.isLogin, () => {
         <h1 class="text-5xl font-bold">蝾螈馆</h1>
         <p class="py-6">
           继「蝾螈池」之后的全新篇章——<strong>蝾螈馆</strong>
-          「蝾螈池」的老朋友们注意啦~<br>
-          我们的新家——<strong>蝾螈馆</strong> 正在紧锣密鼓地装修中 🛠️<br>
-          虽然还没完全布置好，但部分功能已经开放，欢迎大家提前入住！<br>
+          我们的新家——<strong>蝾螈馆</strong> 正在紧锣密鼓地装修中 🛠️
+          虽然还没完全布置好，但部分功能已经开放，欢迎大家提前入住！
           当前可使用：<strong>静态网站托管</strong> 🧳✨
         </p>
       </div>
