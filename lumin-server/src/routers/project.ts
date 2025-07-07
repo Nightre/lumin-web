@@ -15,7 +15,7 @@ import { sequelize } from '../database';
 import JSZip from 'jszip';
 import { getFilePath, readFile, saveFile } from '../utils/file';
 import { lookup } from 'mime-types';
-
+import { nanoid } from 'nanoid'
 const project = new Hono<{ Variables: { user: UserPayload } }>();
 
 project.get('/view/:subdomain/*', async (c) => {
@@ -53,6 +53,7 @@ project.post('/create', zValidator('json', createProjectSchema), async (c) => {
 
     const newProject = await Project.create({
       userId,
+      domain: nanoid(8)
     });
 
     return c.json({ message: '项目创建成功', project: newProject }, 201);
@@ -93,7 +94,7 @@ project.get('/search', zValidator('query', queryProjectSchema), async (c) => {
 
 project.post('/update/:id', zValidator('json', updateProjectSchema), async (c) => {
   try {
-    const projectId = c.req.param('id');
+    const projectId = Number(c.req.param('id'));
     const data = c.req.valid('json');
     const { id: userId } = c.get('user').user;
 
@@ -104,7 +105,20 @@ project.post('/update/:id', zValidator('json', updateProjectSchema), async (c) =
     if (!projectToUpdate) {
       return c.json({ error: '项目未找到或您没有权限操作' }, 404);
     }
-    
+
+    if (data.domain) {
+
+      const domainConflict = await Project.findOne({
+        where: {
+          domain: data.domain,
+        },
+      });
+      console.log(domainConflict, data.domain)
+      if (domainConflict && domainConflict.id !== projectId) {
+        return c.json({ error: '该子域名已被占用，请更换一个哦~' }, 400);
+      }
+    }
+
     await projectToUpdate.update(data);
 
     return c.json({ message: '项目更新成功', project: projectToUpdate });

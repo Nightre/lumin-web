@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/user';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import http from "../utils/http"
 import type { IProject } from '@/interface';
 import { useRouter } from 'vue-router';
@@ -22,16 +22,40 @@ const deleteProject = async (id: number) => {
   userProjects.value = userProjects.value!.filter(p => p.id !== id);
 }
 
-onMounted(async () => {
+const loadProject = async () => {
   const res = await http.get("/projects/search")
   userProjects.value = res.data
-})
+}
+
+watch(() => user.isLogin, () => {
+  if (user.isLogin) {
+    loadProject()
+  }
+}, { immediate: true })
 </script>
 
 <template>
-  <div v-for="p in userProjects">
-    <router-link :to="`/detail/${p.id}`">{{ p.name }}</router-link>
-    <button @click="deleteProject(p.id)">X</button>
+  <div class="hero mt-3">
+    <div class="hero-content text-center">
+      <div class="max-w-md">
+        <h1 class="text-5xl font-bold">蝾螈馆</h1>
+        <p class="py-6">
+          继蝾螈池又一新作, 目前该网站正在建设. 不过蝾螈的居民可以开始注册使用已开发功能.
+          目前有托管静态网站的功能
+        </p>
+      </div>
+    </div>
   </div>
-  <button @click="createProject">创建</button>
+  <div v-if="user.isLogin">
+    <button @click="createProject" class="btn w-full mt-3">创建</button>
+    <div class="grid gap-4 mt-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div v-for="p in userProjects" :key="p.id" class="card p-4 bg-base-100 shadow-sm">
+        <router-link :to="`/detail/${p.id}`" class="text-lg font-bold m-0">
+          {{ p.name }}
+        </router-link>
+        <button @click="deleteProject(p.id)" class="btn btn-error btn-sm absolute right-4 top-4">删除</button>
+      </div>
+    </div>
+  </div>
+  <p v-else class="text-center">请登录后使用</p>
 </template>

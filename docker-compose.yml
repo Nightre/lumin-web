@@ -58,6 +58,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_SERVER_URL: http://127.0.0.1:3000/api/1v/
+        VITE_WEBSITE_DOMAIN: guan.axopl.com
     expose:
       - "8080"
     restart: unless-stopped
@@ -73,7 +74,8 @@ services:
       - frontend
       - app
     restart: unless-stopped
-    
+    environment:
+      - DOMAIN=guan.axopl.com
 volumes:
   mysql-data:
   redis-data:
