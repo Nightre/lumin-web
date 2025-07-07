@@ -15,4 +15,4 @@ RUN npm run build
 FROM node:18
 WORKDIR /app
 COPY --from=build /app/dist /app
-CMD ["http-server", "/app", "-p", "8080", "--fallback", "index.html"]
+CMD ["npx", "http-server", "/app", "-p", "8080", "--fallback", "index.html"]
