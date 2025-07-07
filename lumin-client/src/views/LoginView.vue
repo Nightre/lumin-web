@@ -85,7 +85,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Form, Field, defineRule } from 'vee-validate';
-import axios from '../axios';
+import axios from '../utils/http';
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 import type { IUser } from '../stores/user';

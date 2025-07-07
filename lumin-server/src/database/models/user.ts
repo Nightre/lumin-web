@@ -1,5 +1,4 @@
 import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
-import { sequelize } from '..';
 
 interface UserAttributes {
     id: number;
@@ -30,7 +29,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
 }
 
 
-User.init({
+export const init = (sequelize: Sequelize) => User.init({
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,

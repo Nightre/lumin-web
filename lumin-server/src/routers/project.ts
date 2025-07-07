@@ -1,46 +1,58 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { Op } from 'sequelize'; // 引入 Sequelize 的操作符，用于模糊查询
+import { Op } from 'sequelize';
 import { authMiddleware } from '../middleware/auth';
 import { Project } from '../database/models/project';
 import {
   createProjectSchema,
   updateProjectSchema,
   queryProjectSchema,
+  uploadZipSchema,
 } from '../validators/project';
+import { UserPayload } from '../services/userService';
+import { File } from '../database/models/file';
+import { sequelize } from '../database';
+import JSZip from 'jszip';
+import { getFilePath, readFile, saveFile } from '../utils/file';
+import { lookup } from 'mime-types';
 
-// 定义 Hono 上下文中 user 变量的类型，与 authMiddleware 一致
-type UserPayload = {
-    id: number;
-    email: string;
-}
-
-// 创建一个新的 Hono 实例用于项目路由
 const project = new Hono<{ Variables: { user: UserPayload } }>();
 
-// --- 中间件 ---
-// 对此路由下的所有请求应用认证中间件
-// 只有登录的用户才能访问这些接口
+project.get('/view/:subdomain/*', async (c) => {
+  const subdomain = c.req.param('subdomain');
+  const filePath = c.req.path.split('/').slice(6).join('/')
+
+  const fileDb = await File.findOne({
+    where: { path: filePath },
+    include: {
+      model: Project,
+      where: {
+        domain: subdomain,
+      },
+    }
+  })
+
+  if (!fileDb) {
+    return c.text('404 没文件', 404)
+  }
+
+  const file = await readFile(fileDb.fileId)
+  const mimeType = fileDb.mimeType
+  return new Response(file, {
+    headers: {
+      'Content-Type': mimeType,
+    },
+  });
+})
+
 project.use('*', authMiddleware);
 
-// --- 路由定义 ---
-
-/**
- * @api {post} /projects 创建一个新项目
- * @apiName CreateProject
- * @apiGroup Project
- * @apiHeader {String} Authorization Bearer <token>
- * @apiBody {String} name 项目名称.
- * @apiBody {String} [description] 项目描述.
- */
-project.post('/', zValidator('json', createProjectSchema), async (c) => {
+project.post('/create', zValidator('json', createProjectSchema), async (c) => {
   try {
-    const data = c.req.valid('json');
-    const { id: userId } = c.get('user'); // 从认证中间件获取当前用户ID
+    const { id: userId } = c.get('user').user;
 
     const newProject = await Project.create({
-      ...data,
-      userId: userId,
+      userId,
     });
 
     return c.json({ message: '项目创建成功', project: newProject }, 201);
@@ -50,30 +62,26 @@ project.post('/', zValidator('json', createProjectSchema), async (c) => {
   }
 });
 
-/**
- * @api {get} /projects 查询当前用户的所有项目
- * @apiName GetProjects
- * @apiGroup Project
- * @apiHeader {String} Authorization Bearer <token>
- * @apiQuery {String} [name] 按项目名称进行模糊搜索.
- */
-project.get('/', zValidator('query', queryProjectSchema), async (c) => {
+project.get('/detail/:id', async (c) => {
+  const projectId = c.req.param('id')
+  const project = await Project.findByPk(projectId)
+
+  return c.json({ project });
+})
+
+project.get('/search', zValidator('query', queryProjectSchema), async (c) => {
   try {
     const { name } = c.req.valid('query');
-    const { id: userId } = c.get('user');
+    const user = c.get('user').user;
 
-    const whereClause: { userId: number; name?: any } = { userId: userId };
-
-    // 如果提供了 name 查询参数，则添加模糊搜索条件
+    const whereClause: { userId: number; name?: any } = { userId: user.id };
     if (name) {
-      whereClause.name = {
-        [Op.like]: `%${name}%`, // 使用 LIKE '%name%' 进行模糊匹配
-      };
+      whereClause.name = { [Op.like]: `%${name}%` };
     }
 
     const projects = await Project.findAll({
       where: whereClause,
-      order: [['createdAt', 'DESC']], // 按创建时间降序排序
+      order: [['createdAt', 'DESC']],
     });
 
     return c.json(projects);
@@ -83,31 +91,20 @@ project.get('/', zValidator('query', queryProjectSchema), async (c) => {
   }
 });
 
-/**
- * @api {patch} /projects/:id 更新一个指定的项目
- * @apiName UpdateProject
- * @apiGroup Project
- * @apiParam {Number} id 项目的唯一ID.
- * @apiHeader {String} Authorization Bearer <token>
- * @apiBody {String} [name] 新的项目名称.
- * @apiBody {String} [description] 新的项目描述.
- */
-project.patch('/:id', zValidator('json', updateProjectSchema), async (c) => {
+project.post('/update/:id', zValidator('json', updateProjectSchema), async (c) => {
   try {
     const projectId = c.req.param('id');
     const data = c.req.valid('json');
-    const { id: userId } = c.get('user');
+    const { id: userId } = c.get('user').user;
 
-    // 首先查找项目，并确保它属于当前登录的用户
     const projectToUpdate = await Project.findOne({
-      where: { id: projectId, userId: userId },
+      where: { id: projectId, userId },
     });
 
     if (!projectToUpdate) {
       return c.json({ error: '项目未找到或您没有权限操作' }, 404);
     }
-
-    // 如果找到了，就更新它
+    
     await projectToUpdate.update(data);
 
     return c.json({ message: '项目更新成功', project: projectToUpdate });
@@ -117,37 +114,91 @@ project.patch('/:id', zValidator('json', updateProjectSchema), async (c) => {
   }
 });
 
-/**
- * @api {delete} /projects/:id 删除一个指定的项目
- * @apiName DeleteProject
- * @apiGroup Project
- * @apiParam {Number} id 项目的唯一ID.
- * @apiHeader {String} Authorization Bearer <token>
- */
-project.delete('/:id', async (c) => {
+project.delete('/delete/:id', async (c) => {
   try {
     const projectId = c.req.param('id');
-    const { id: userId } = c.get('user');
+    const { id: userId } = c.get('user').user;
 
-    // 查找项目，确保它属于当前用户
     const projectToDelete = await Project.findOne({
-      where: { id: projectId, userId: userId },
+      where: { id: projectId, userId },
     });
 
     if (!projectToDelete) {
       return c.json({ error: '项目未找到或您没有权限操作' }, 404);
     }
 
-    // 删除项目
     await projectToDelete.destroy();
 
     return c.json({ message: '项目删除成功' });
-    // 或者返回 204 No Content，表示成功但无返回内容
-    // return c.body(null, 204);
   } catch (error) {
     console.error('删除项目失败:', error);
     return c.json({ error: '服务器内部错误，无法删除项目' }, 500);
   }
 });
+
+project.post('/upload-zip/:projectId', zValidator('form', uploadZipSchema), async (c) => {
+  const projectId = Number(c.req.param('projectId'));
+  const { file } = c.req.valid('form');
+  const { id: userId } = c.get('user').user;
+
+  const project = await Project.findOne({ where: { id: projectId, userId } });
+  if (!project) {
+    return c.json({ error: 'Project not found or not authorized' }, 404);
+  }
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    await processZipFileUpload(arrayBuffer, projectId)
+    return c.json({ message: "上传成功" }, 200);
+  } catch (error) {
+    console.error(error)
+    return c.json({ error: '解压ZIP失败' }, 500);
+  }
+});
+
+
+const processZipFileUpload = async (arrayBuffer: ArrayBuffer, projectId: number) => {
+  await sequelize.transaction(async (t) => {
+    await File.destroy({ where: { projectId }, transaction: t });
+    const rootFolder = await File.create({
+      name: 'Root',
+      folder: true,
+      projectId,
+      parentId: null,
+    }, { transaction: t });
+
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const filePromises: Promise<any>[] = [];
+    const entries = Object.values(zip.files);
+
+    for (const zipEntry of entries) {
+      const relativePath = zipEntry.name;
+      const pathParts = relativePath.split('/').filter(Boolean);
+
+      let parentId = rootFolder.id;
+
+      if (!zipEntry.dir) {
+        const content = await zipEntry.async('nodebuffer');
+        const fileId = await saveFile(Buffer.from(content))
+        const fileName = pathParts[pathParts.length - 1]
+
+        filePromises.push(
+          File.create({
+            name: fileName,
+            folder: false,
+            fileId,
+            projectId,
+            parentId,
+            path: relativePath,
+            mimeType: lookup(fileName) || 'text/plain'
+          }, { transaction: t })
+        );
+      }
+    }
+
+    await Promise.all(filePromises);
+  });
+}
+
 
 export default project;

@@ -26,3 +26,12 @@ export const verifyToken = async (token: string) => {
         return null
     }
 }
+
+
+export type UserPayload = {
+    user: {
+        id: number;
+        email: string;
+    },
+    exp: number
+};

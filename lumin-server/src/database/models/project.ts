@@ -1,25 +1,23 @@
-import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional, ForeignKey } from 'sequelize';
-import { sequelize } from '../index'; // 假设你的 sequelize 实例在这里导出
+import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional, ForeignKey, Sequelize } from 'sequelize';
 import { User } from './user';
+import { File } from './file';
 
-// 定义 Project 模型的属性
 export interface ProjectAttributes {
   id: CreationOptional<number>;
   name: string;
-  description: string | null;
+  description: string;
   userId: ForeignKey<User['id']>;
 }
 
-// 定义 Project 模型实例，包含所有方法
 export class Project extends Model<InferAttributes<Project>, InferCreationAttributes<Project, { omit: 'id' }>> {
   declare id: CreationOptional<number>;
-  declare name: string;
-  declare description: string | null;
+  declare name: CreationOptional<string>;
+  declare description: CreationOptional<string>;
   declare userId: ForeignKey<User['id']>;
+  declare domain: CreationOptional<string>
 }
 
-// 初始化模型
-Project.init(
+export const init = (sequelize: Sequelize) => Project.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -29,10 +27,16 @@ Project.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: "未命名"
+    },
+    domain: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
+      defaultValue: ""
     },
     userId: {
       type: DataTypes.INTEGER,
@@ -41,18 +45,26 @@ Project.init(
         model: User,
         key: 'id',
       },
-      onDelete: 'CASCADE', // 如果用户被删除，其所有项目也应被删除
+      onDelete: 'CASCADE',
     },
   },
   {
     sequelize,
     tableName: 'projects',
-    timestamps: true, // 启用 createdAt 和 updatedAt 字段
+    timestamps: true,
+    hooks: {
+      afterCreate: async (project, options) => {
+        console.log("创建作品")
+        await File.create(
+          {
+            name: 'Root',
+            folder: true,
+            projectId: project.id,
+            parentId: null,
+          },
+          { transaction: options.transaction } // 确保在同一事务中
+        );
+      },
+    },
   }
 );
-
-// 定义关联关系
-// 一个用户可以有多个项目
-User.hasMany(Project, { foreignKey: 'userId' });
-// 一个项目只属于一个用户
-Project.belongsTo(User, { foreignKey: 'userId' });

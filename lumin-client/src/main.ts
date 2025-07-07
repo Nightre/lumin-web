@@ -8,6 +8,13 @@ import App from './App.vue'
 import router from './router'
 import { defineRule } from 'vee-validate';
 import { all } from '@vee-validate/rules';
+import { configure } from 'vee-validate';
+
+configure({
+  validateOnInput: true,
+  validateOnChange: true,
+  validateOnBlur: true,
+});
 
 Object.entries(all).forEach(([name, rule]) => {
   defineRule(name, rule);
