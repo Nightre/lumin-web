@@ -21,10 +21,10 @@ server {
 
 server {
     listen 80;
-    server_name ~^(?<subdomain>[^.]+)\.guan.axopl.com$;
+    server_name ~^(?<sub>[^.]+)\.guan\.axopl\.com$;
 
     location / {
-        rewrite ^/(.*)$ /api/v1/projects/view/$subdomain/$1 break;
+        rewrite ^/(.*)$ /api/v1/projects/view/$sub/$1 break;
 
         proxy_pass http://app:3000;
         proxy_set_header Host $host;
