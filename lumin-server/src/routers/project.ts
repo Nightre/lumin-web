@@ -18,35 +18,48 @@ import { lookup } from 'mime-types';
 import { nanoid } from 'nanoid'
 const project = new Hono<{ Variables: { user: UserPayload } }>();
 
-project.get('/view/:subdomain/*', async (c) => {
-  const subdomain = c.req.param('subdomain');
-  const filePath = c.req.path.split('/').slice(6).join('/')
-  
-  if (!filePath) {
-    return c.text('404 要路径', 404)
-  }
-
-  const fileDb = await File.findOne({
+const findFileByPathAndSubdomain = async (filePath: string, subdomain: string) => {
+  return await File.findOne({
     where: { path: filePath },
     include: {
       model: Project,
       where: {
         domain: subdomain,
       },
-    }
-  })
-  console.log("访问文件", filePath, subdomain)
-
-  if (!fileDb) {
-    return c.text('404 没文件', 404)
-  }
-  const file = await readFile(fileDb.fileId)
-  const mimeType = fileDb.mimeType
-  return new Response(file, {
-    headers: {
-      'Content-Type': mimeType,
     },
   });
+};
+
+
+project.get('/view/:subdomain/*', async (c) => {
+  let filePath = c.req.path.split('/').slice(6).join('/');
+  const subdomain = c.req.param('subdomain');
+
+  let fileDb = null;
+  if (!filePath) {
+    filePath = 'index.html'
+  }
+  fileDb = await findFileByPathAndSubdomain(filePath, subdomain);
+  if (!fileDb) {
+    fileDb = await findFileByPathAndSubdomain('404.html', subdomain);
+  }
+
+  if (!fileDb) {
+    return c.text('404 没文件', 404);
+  }
+
+  try {
+    const file = await readFile(fileDb.fileId);
+    const mimeType = fileDb.mimeType || 'text/plain'; // 防止 mimeType 为空
+    return new Response(file, {
+      headers: {
+        'Content-Type': mimeType,
+      },
+    });
+  } catch (error) {
+    console.error('文件读取错误:', error);
+    return c.text('500 服务器错误', 500);
+  }
 })
 
 project.use('*', authMiddleware);
