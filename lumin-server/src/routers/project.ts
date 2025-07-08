@@ -45,7 +45,7 @@ project.get('/view/:subdomain/*', async (c) => {
   }
 
   if (!fileDb) {
-    return c.text('404 没文件', 404);
+    return c.text('404 没文件' + filePath , 404);
   }
 
   try {
