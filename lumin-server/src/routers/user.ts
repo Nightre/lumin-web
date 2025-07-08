@@ -71,13 +71,10 @@ user.post('/login', zValidator('json', loginSchema), async (c) => {
     const { email, password } = c.req.valid('json');
 
     const foundUser = await User.findOne({ where: { email } });
-    if (!foundUser) {
-        return c.json({ error: '无效的邮箱' }, 401);
-    }
-
+    // @ts-ignore
     const isPasswordValid = await comparePassword(password, foundUser.password);
-    if (!isPasswordValid) {
-        return c.json({ error: '密码错误' }, 401);
+    if (!isPasswordValid || !foundUser) {
+        return c.json({ error: '无效的邮箱或错误的密码' }, 401);
     }
 
     const token = await createToken(foundUser)
@@ -85,7 +82,7 @@ user.post('/login', zValidator('json', loginSchema), async (c) => {
     return c.json({ token, message: "登录成功", user: foundUser.serlize() });
 });
 
-// --- 注销 ---
+// --- 登出 ---
 user.post('/logout', authMiddleware, async (c) => {
     const authHeader = c.req.header('Authorization');
     const token = authHeader?.split(' ')[1];
@@ -98,7 +95,7 @@ user.post('/logout', authMiddleware, async (c) => {
         }
     }
 
-    return c.json({ message: '成功注销' });
+    return c.json({ message: '成功登出' });
 });
 
 

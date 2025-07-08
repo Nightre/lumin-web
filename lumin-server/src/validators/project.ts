@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import {hasZipMagic} from "../utils/zip";
+
+
 
 export const createProjectSchema = z.object({
 
@@ -18,7 +21,7 @@ export const uploadZipSchema = z.object({
   file: z
     .instanceof(File)
     .refine(
-      (file) => file.type === 'application/zip' || file.name.endsWith('.zip'),
+        async (file) => (file.type === 'application/zip' || file.name.endsWith('.zip') && await hasZipMagic(file)),
       { message: '必须上传 ZIP 文件' }
     )
     .refine(
