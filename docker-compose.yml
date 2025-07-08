@@ -68,6 +68,8 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
+      args:
+        - VITE_WEBSITE_DOMAIN=guan.axopl.com
     ports:
       - "80:80"
     depends_on:
