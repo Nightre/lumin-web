@@ -7,7 +7,7 @@ export default {
         options: {}
     },
     redis: process.env.REDIS_URL as string,
-    jwt_secret: process.env.JWT_SECRET || 'change_this_secret',
-    jwt_expires_in: process.env.JWT_EXPIRES_IN || '5m',
+    jwt_secret: 'ASIODH(Y(*@(*Y(OIHOASD',
+    jwt_expires_in: Math.floor(Date.now() / 1000) + 60 * 5,
     upload_folder: path.resolve(process.cwd(), process.env.UPLOAD_FOLDER || 'uploads')
 };
