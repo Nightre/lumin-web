@@ -21,7 +21,7 @@ server {
 
 server {
     listen 80;
-    server_name ~^(?<sub>[^.]+)\.${DOMAIN}$;
+    server_name ~^(?<sub>[^.]+)\.guan.axopl.com$;
 
     location / {
         rewrite ^/(.*)$ /api/1v/projects/view/$sub/$1 break;
