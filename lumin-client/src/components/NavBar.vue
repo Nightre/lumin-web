@@ -1,9 +1,9 @@
 <template>
-  <header class="bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow sticky top-0 z-50">
+  <header class="bg-white shadow sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <!-- Logo / Home -->
-        <router-link to="/" class="text-xl font-semibold hover:text-yellow-300 transition">
+        <router-link to="/" class="text-xl font-semibold">
           蝾螈馆
         </router-link>
 
