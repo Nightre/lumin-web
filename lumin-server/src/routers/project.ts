@@ -124,7 +124,7 @@ project.post('/update/:id', zValidator('json', updateProjectSchema), async (c) =
     }
 
     if (data.domain) {
-
+      data.domain = data.domain.toLowerCase();
       const domainConflict = await Project.findOne({
         where: {
           domain: data.domain,
