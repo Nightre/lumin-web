@@ -213,6 +213,7 @@ const processZipFileUpload = async (arrayBuffer: ArrayBuffer, projectId: number)
         const fileId = await saveFile(Buffer.from(content))
         const fileName = pathParts[pathParts.length - 1]
 
+        console.log("创建文件路径", relativePath)
         filePromises.push(
           File.create({
             name: fileName,
