@@ -65,7 +65,14 @@ const [file, fileAttrs] = defineField('file');
 const route = useRoute();
 const project = ref<IProject>();
 const fileInput = ref<HTMLInputElement | null>(null);
-const websiteUrl = computed(() => project.value?.domain + '.' + import.meta.env.VITE_WEBSITE_DOMAIN)
+
+const websiteUrl = computed(() => {
+  const protocol = window.location.protocol;
+  const domain = project.value?.domain
+    ? `${project.value.domain}.${import.meta.env.VITE_WEBSITE_DOMAIN}`
+    : '';
+  return domain ? `${protocol}//${domain}` : '';
+});
 
 watch(
     () => route.params.id,
