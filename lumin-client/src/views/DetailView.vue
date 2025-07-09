@@ -99,8 +99,6 @@ const submitForm = handleSubmit(async (values) => {
     
         if (values.file) {
             const formData = new FormData();
-            formData.append('domain', values.domain);
-            formData.append('description', values.description);
             formData.append('file', values.file);
     
             await http.post('/projects/upload-zip/' + project.value?.id, formData, {
