@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import {hasZipMagic} from "../utils/zip";
+import { hasZipMagic } from "../utils/zip";
 
 
 
@@ -15,13 +15,15 @@ export const updateProjectSchema = z.object({
 
 export const queryProjectSchema = z.object({
   name: z.string().optional(),
+  hasIndex: z.boolean().optional(),
+  userId: z.number().optional(),
 });
 
 export const uploadZipSchema = z.object({
   file: z
     .instanceof(File)
     .refine(
-        async (file) => (file.type === 'application/zip' || file.name.endsWith('.zip') && await hasZipMagic(file)),
+      async (file) => (file.type === 'application/zip' || file.name.endsWith('.zip') && await hasZipMagic(file)),
       { message: '必须上传 ZIP 文件' }
     )
     .refine(

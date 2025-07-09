@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/user';
 import { onMounted, reactive, ref, watch } from 'vue';
-import http from "../utils/http"
+import http, { toSubWeb } from "../utils/http"
 import type { IProject } from '@/interface';
 import { useRouter } from 'vue-router';
 
 const user = useUserStore()
 const userProjects = ref<IProject[]>()
+const otherProjects = ref<IProject[]>()
+
 const router = useRouter()
 
 const createProject = async () => {
@@ -23,15 +25,30 @@ const deleteProject = async (id: number) => {
 }
 
 const loadProject = async () => {
-  const res = await http.get("/projects/search")
+  const res = await http.get("/projects/search", {
+    params: {
+      userId: user.user?.id
+    }
+  })
   userProjects.value = res.data
+}
+
+const loadOtherProject = async () => {
+  const res = await http.get("/projects/search", {
+    params: {
+      hasIndex: true
+    }
+  })
+  otherProjects.value = res.data
 }
 
 watch(() => user.isLogin, () => {
   if (user.isLogin) {
     loadProject()
+    loadOtherProject()
   }
 }, { immediate: true })
+
 </script>
 
 <template>
@@ -60,4 +77,9 @@ watch(() => user.isLogin, () => {
     </div>
   </div>
   <p v-else class="text-center">请登录后使用</p>
+
+  <h1>其他作品</h1>
+  <div v-for="project in otherProjects">
+    <a :href="toSubWeb(project)">{{ project.name }} by {{ project.author }}</a>
+  </div>
 </template>

@@ -15,6 +15,7 @@ export class Project extends Model<InferAttributes<Project>, InferCreationAttrib
   declare description: CreationOptional<string>;
   declare userId: ForeignKey<User['id']>;
   declare domain: CreationOptional<string>
+  declare hasIndex: CreationOptional<boolean>
 }
 
 export const init = (sequelize: Sequelize) => Project.init(
@@ -47,6 +48,10 @@ export const init = (sequelize: Sequelize) => Project.init(
       },
       onDelete: 'CASCADE',
     },
+    hasIndex: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    }
   },
   {
     sequelize,

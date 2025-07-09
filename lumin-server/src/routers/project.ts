@@ -45,7 +45,7 @@ project.get('/view/:subdomain/*', async (c) => {
   }
 
   if (!fileDb) {
-    return c.text('404 没文件' + filePath , 404);
+    return c.text('404 没文件' + filePath, 404);
   }
 
   try {
@@ -61,6 +61,33 @@ project.get('/view/:subdomain/*', async (c) => {
     return c.text('500 服务器错误', 500);
   }
 })
+
+project.get('/search', zValidator('query', queryProjectSchema), async (c) => {
+  try {
+    const { name, hasIndex, userId } = c.req.valid('query');
+
+    const user = c.get('user').user;
+    
+    const whereClause: any = {
+      userId,
+      hasIndex
+    };
+
+    if (name) {
+      whereClause.name = { [Op.like]: `%${name}%` };
+    }
+
+    const projects = await Project.findAll({
+      where: whereClause,
+      order: [['createdAt', 'DESC']],
+    });
+
+    return c.json(projects);
+  } catch (error) {
+    console.error('查询项目失败:', error);
+    return c.json({ error: '服务器内部错误，无法查询项目' }, 500);
+  }
+});
 
 project.use('*', authMiddleware);
 
@@ -86,28 +113,6 @@ project.get('/detail/:id', async (c) => {
 
   return c.json({ project });
 })
-
-project.get('/search', zValidator('query', queryProjectSchema), async (c) => {
-  try {
-    const { name } = c.req.valid('query');
-    const user = c.get('user').user;
-
-    const whereClause: { userId: number; name?: any } = { userId: user.id };
-    if (name) {
-      whereClause.name = { [Op.like]: `%${name}%` };
-    }
-
-    const projects = await Project.findAll({
-      where: whereClause,
-      order: [['createdAt', 'DESC']],
-    });
-
-    return c.json(projects);
-  } catch (error) {
-    console.error('查询项目失败:', error);
-    return c.json({ error: '服务器内部错误，无法查询项目' }, 500);
-  }
-});
 
 project.post('/update/:id', zValidator('json', updateProjectSchema), async (c) => {
   try {
@@ -179,7 +184,7 @@ project.post('/upload-zip/:projectId', zValidator('form', uploadZipSchema), asyn
 
   try {
     const arrayBuffer = await file.arrayBuffer();
-    await processZipFileUpload(arrayBuffer, projectId)
+    await processZipFileUpload(arrayBuffer, project)
     return c.json({ message: "上传成功" }, 200);
   } catch (error) {
     console.error(error)
@@ -188,7 +193,8 @@ project.post('/upload-zip/:projectId', zValidator('form', uploadZipSchema), asyn
 });
 
 
-const processZipFileUpload = async (arrayBuffer: ArrayBuffer, projectId: number) => {
+const processZipFileUpload = async (arrayBuffer: ArrayBuffer, project: Project) => {
+  const projectId = project.id
   await sequelize.transaction(async (t) => {
     await File.destroy({ where: { projectId }, transaction: t });
     const rootFolder = await File.create({
@@ -201,7 +207,7 @@ const processZipFileUpload = async (arrayBuffer: ArrayBuffer, projectId: number)
     const zip = await JSZip.loadAsync(arrayBuffer);
     const filePromises: Promise<any>[] = [];
     const entries = Object.values(zip.files);
-
+    let hasIndex = false
     for (const zipEntry of entries) {
       const relativePath = zipEntry.name;
       const pathParts = relativePath.split('/').filter(Boolean);
@@ -225,9 +231,14 @@ const processZipFileUpload = async (arrayBuffer: ArrayBuffer, projectId: number)
             mimeType: lookup(fileName) || 'text/plain'
           }, { transaction: t })
         );
+
+        if (relativePath == "index.html") {
+          hasIndex = true
+        }
       }
     }
 
+    await project.update({ hasIndex })
     await Promise.all(filePromises);
   });
 }

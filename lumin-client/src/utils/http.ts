@@ -1,3 +1,4 @@
+import type { IProject } from "@/interface";
 import axios from "axios";
 import { useToast } from "vue-toastification";
 
@@ -65,3 +66,12 @@ declare module 'axios' {
 }
 
 export default instance
+
+
+export const toSubWeb = (project: IProject) => {
+    const protocol = window.location.protocol;
+    const domain = project?.domain
+        ? `${project.domain}.${import.meta.env.VITE_WEBSITE_DOMAIN}`
+        : '';
+    return domain ? `${protocol}//${domain}` : '';
+}
