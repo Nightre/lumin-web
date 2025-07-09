@@ -66,12 +66,16 @@ project.get('/search', zValidator('query', queryProjectSchema), async (c) => {
   try {
     const { name, hasIndex, userId } = c.req.valid('query');
 
-    const user = c.get('user').user;
+    //const user = c.get('user').user;
     
-    const whereClause: any = {
-      userId,
-      hasIndex
-    };
+    const whereClause: any = {}
+
+    if (userId) {
+      whereClause.userId = Number(userId)
+    }
+    if (hasIndex) {
+      whereClause.hasIndex = hasIndex == "true"
+    }
 
     if (name) {
       whereClause.name = { [Op.like]: `%${name}%` };

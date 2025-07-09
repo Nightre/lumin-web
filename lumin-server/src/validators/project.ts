@@ -15,8 +15,8 @@ export const updateProjectSchema = z.object({
 
 export const queryProjectSchema = z.object({
   name: z.string().optional(),
-  hasIndex: z.boolean().optional(),
-  userId: z.number().optional(),
+  hasIndex: z.string().optional(),
+  userId: z.string().optional(),
 });
 
 export const uploadZipSchema = z.object({
