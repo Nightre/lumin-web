@@ -19,7 +19,7 @@ export class Project extends Model<InferAttributes<Project>, InferCreationAttrib
 
   toJSON(): object {
     const values = super.toJSON();
-    const user = this.get('User') as User | undefined;
+    const user = this.get('author') as User | undefined;
     return {
       ...values,
       author: user ? user.toJSON() : null,

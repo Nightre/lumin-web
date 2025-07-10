@@ -80,6 +80,6 @@ watch(() => user.isLogin, () => {
   <h1>其他作品</h1>
   <div v-for="project in otherProjects">
     <a :href="toSubWeb(project)" class="link link-primary">{{ project.name }}</a>
-    <p>作者：<strong>{{ project.author.username }}</strong></p>
+    <p v-if="project.author">作者：<strong>{{ project.author.username }}</strong></p>
   </div>
 </template>
