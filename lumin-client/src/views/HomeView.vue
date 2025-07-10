@@ -77,9 +77,9 @@ watch(() => user.isLogin, () => {
   </div>
   <p v-else class="text-center">请登录后使用</p>
 
-  <h1>其他作品</h1>
-  <div v-for="project in otherProjects">
+  <h1 class="my-2 text-2xl font-bold">其他人作品</h1>
+  <div v-for="project in otherProjects" class="flex gap-2">
     <a :href="toSubWeb(project)" class="link link-primary">{{ project.name }}</a>
-    <p v-if="project.author">作者：<strong>{{ project.author.username }}</strong></p>
+    <p class="text-gray-400" v-if="project.author">作者：<strong>{{ project.author.username }}</strong></p>
   </div>
 </template>

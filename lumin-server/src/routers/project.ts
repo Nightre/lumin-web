@@ -16,6 +16,7 @@ import JSZip from 'jszip';
 import { getFilePath, readFile, saveFile } from '../utils/file';
 import { lookup } from 'mime-types';
 import { nanoid } from 'nanoid'
+import { User } from '../database/models/user';
 const project = new Hono<{ Variables: { user: UserPayload } }>();
 
 const findFileByPathAndSubdomain = async (filePath: string, subdomain: string) => {
@@ -84,8 +85,12 @@ project.get('/search', zValidator('query', queryProjectSchema), async (c) => {
     const projects = await Project.findAll({
       where: whereClause,
       order: [['createdAt', 'DESC']],
+      include: {
+        model: User,
+        as: 'author',
+        attributes: ['username'],
+      }
     });
-
     return c.json(projects);
   } catch (error) {
     console.error('查询项目失败:', error);
