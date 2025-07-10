@@ -57,10 +57,8 @@ watch(() => user.isLogin, () => {
       <div class="max-w-md">
         <h1 class="text-5xl font-bold">蝾螈馆</h1>
         <p class="py-6">
-          继「蝾螈池」之后的全新篇章——<strong>蝾螈馆</strong>
-          我们的新家——<strong>蝾螈馆</strong> 正在紧锣密鼓地装修中 🛠️
-          虽然还没完全布置好，但部分功能已经开放，欢迎大家提前入住！
-          当前可使用：<strong>静态网站托管</strong> 🧳✨
+          <strong>蝾螈馆</strong> 正在开发中...
+          当前可使用功能：<strong>静态网站托管</strong>
         </p>
       </div>
     </div>
@@ -80,6 +78,7 @@ watch(() => user.isLogin, () => {
 
   <h1>其他作品</h1>
   <div v-for="project in otherProjects">
-    <a :href="toSubWeb(project)">{{ project.name }} by {{ project.author }}</a>
+    <a :href="toSubWeb(project)" class="link link-primary">{{ project.name }}</a>
+    <p>by {{ project.author }}</p>
   </div>
 </template>

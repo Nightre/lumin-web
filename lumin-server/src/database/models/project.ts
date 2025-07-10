@@ -16,6 +16,15 @@ export class Project extends Model<InferAttributes<Project>, InferCreationAttrib
   declare userId: ForeignKey<User['id']>;
   declare domain: CreationOptional<string>
   declare hasIndex: CreationOptional<boolean>
+
+  toJSON(): object {
+    const values = super.toJSON();
+    const user = this.get('User') as User | undefined;
+    return {
+      ...values,
+      author: user ? user.toJSON() : null,
+    };
+  }
 }
 
 export const init = (sequelize: Sequelize) => Project.init(

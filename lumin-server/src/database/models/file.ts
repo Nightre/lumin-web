@@ -58,15 +58,6 @@ export const init = (sequelize: Sequelize) => File.init(
             },
             onDelete: 'CASCADE',
         },
-        parentId: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-            references: {
-                model: 'files',
-                key: 'id',
-            },
-            onDelete: 'CASCADE',
-        },
         mimeType: {
             type: DataTypes.STRING,
             allowNull: true,
