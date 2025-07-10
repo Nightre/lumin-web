@@ -67,7 +67,7 @@ project.get('/search', zValidator('query', queryProjectSchema), async (c) => {
     const { name, hasIndex, userId } = c.req.valid('query');
 
     //const user = c.get('user').user;
-    
+
     const whereClause: any = {}
 
     if (userId) {
@@ -199,6 +199,8 @@ project.post('/upload-zip/:projectId', zValidator('form', uploadZipSchema), asyn
 
 const processZipFileUpload = async (arrayBuffer: ArrayBuffer, project: Project) => {
   const projectId = project.id
+  let hasIndex = false
+
   await sequelize.transaction(async (t) => {
     await File.destroy({ where: { projectId }, transaction: t });
     const rootFolder = await File.create({
@@ -211,7 +213,6 @@ const processZipFileUpload = async (arrayBuffer: ArrayBuffer, project: Project) 
     const zip = await JSZip.loadAsync(arrayBuffer);
     const filePromises: Promise<any>[] = [];
     const entries = Object.values(zip.files);
-    let hasIndex = false
     for (const zipEntry of entries) {
       const relativePath = zipEntry.name;
       const pathParts = relativePath.split('/').filter(Boolean);
@@ -242,9 +243,9 @@ const processZipFileUpload = async (arrayBuffer: ArrayBuffer, project: Project) 
       }
     }
 
-    await project.update({ hasIndex })
     await Promise.all(filePromises);
   });
+  await project.update({ hasIndex })
 }
 
 
