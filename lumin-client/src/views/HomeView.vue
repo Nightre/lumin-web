@@ -45,9 +45,12 @@ const loadOtherProject = async () => {
 watch(() => user.isLogin, () => {
   if (user.isLogin) {
     loadProject()
-    loadOtherProject()
   }
 }, { immediate: true })
+
+onMounted(() => {
+  loadOtherProject()
+})
 
 </script>
 
