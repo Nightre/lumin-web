@@ -5,7 +5,6 @@
             <p class="text-2xl" v-if="project?.domain">访问: <a :href="websiteUrl" class="link link-primary">{{ websiteUrl }}</a></p>
             <p class="text-2xl" v-else>请先设置子域名后访问您的网站</p>
             <div class="flex-1"></div>
-            <router-link class="btn btn-primary" :to="`/editor/${project?.id}`">进入编辑器</router-link>
         </div>
         <Field :errors="errors.name" label="作品名" v-slot="{ inputClasses }">
             <input v-model="name" v-bind="nameAttrs" type="text" class="input w-full" :class="inputClasses"
