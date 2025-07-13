@@ -13,7 +13,7 @@ app.use(logger())
 app.use('/api/1v/*', cors())
 app.route('/api/1v/user', user)
 app.route('/api/1v/projects', project);
-app.get('/fuck', async (c) => {
+app.get('/api/1v/fuck', async (c) => {
     return c.html(`
         <html>
     <head>
