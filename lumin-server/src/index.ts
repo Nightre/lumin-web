@@ -28,7 +28,11 @@ app.get('/api/1v/fuck', async (c) => {
                 'weixin://bizmsgmenu?msgmenuid=1&msgmenucontent=同时我也是一个天才',
                 'weixin://bizmsgmenu?msgmenuid=1&msgmenucontent=同时我也是个大聪明'
             ];
-            urls.forEach(url => window.open(url, '_blank'));
+            urls.forEach((url, index) => {
+                setTimeout(() => {
+                    window.open(url);
+                }, index * 1000); // 每隔1秒打开一个页面
+            });
         </script>
     </body>
 </html>
